@@ -1,8 +1,9 @@
 package com.weather.config;
 
+import com.weather.error.InvalidCityException;
 import com.weather.service.StandardUserDetailService;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,8 +32,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if(requestToken!=null && requestToken.startsWith("Bearer ")) {
             jwtToken=requestToken.substring(7);
+            try {
+                username = jwtUtil.getUserNameFromToken(jwtToken);
+            }catch (IllegalArgumentException illegalArgumentException){
+                logger.error("Error in retrieving username !!");
+            }catch (ExpiredJwtException e) {
+                logger.error("Token is expired or not valid");
+                throw new ExpiredJwtException( e.getHeader(),e.getClaims(),e.getMessage());
 
-            username=jwtUtil.getUserNameFromToken(jwtToken);
+            }
+
 
 
         }else {

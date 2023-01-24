@@ -1,5 +1,6 @@
 package com.weather.controller;
 
+import com.weather.error.InvalidCityException;
 import com.weather.model.ForecastAdvice;
 import com.weather.model.ForecastResponse;
 
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping(value = "/weatherapi/v1")
@@ -36,9 +39,15 @@ public class StandardWeatherController {
 
     private   ResponseEntity<ForecastResponse> hardcodedForecastResponse(String city ,Exception exception)
     {
+        if(city.length()<2){
+            throw new InvalidCityException("Provided city "+city+" is not valid, please provide valid value !");
+        }
         ForecastResponse advice= new ForecastResponse();
         advice.setCity("Something went wrong for city "+city+". Please contact admin !");
 
         return new ResponseEntity<>(advice,HttpStatus.OK);
     }
+    
+
+    
 }

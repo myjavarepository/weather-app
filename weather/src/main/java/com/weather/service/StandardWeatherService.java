@@ -8,4 +8,5 @@ import com.weather.model.Weather;
 public interface StandardWeatherService {
 
   ForecastResponse getCityWeatherForecast(String city);
+
 }

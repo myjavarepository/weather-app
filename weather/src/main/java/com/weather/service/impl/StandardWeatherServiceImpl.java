@@ -9,13 +9,14 @@ import com.weather.util.TemperatureUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -29,16 +30,21 @@ public class StandardWeatherServiceImpl implements StandardWeatherService {
     @Autowired
    private StandardWeatherClient client;
 
+    private  static  final Logger LOG= LoggerFactory.getLogger(StandardWeatherServiceImpl.class);
 
-    private  static final Logger LOG = LoggerFactory.getLogger(StandardWeatherServiceImpl.class);
+
     @Override
+    @Cacheable(value = "forecastList",key = "#city")
     public ForecastResponse getCityWeatherForecast(String city) {
+        LOG.info("Getting weather forecast for city {}",city);
         return getWeatherForecastDetails(city);
     }
 
 
+
    private  ForecastResponse  getWeatherForecastDetails(String city)
    {
+
        Weather weather =client.getWeather(city);
 
        List<WeatherObjectList> weatherObjectList= weather.getList();
@@ -122,5 +128,11 @@ public class StandardWeatherServiceImpl implements StandardWeatherService {
        }
    }
 
+    @CacheEvict(allEntries = true,cacheNames ={ "forecastList"})
+    @Scheduled(fixedDelay = 1000*60)
+       public  void evictForecastCache()
+       {
+            LOG.info("Forecast Cache Cleared...");
+       }
 
 }
